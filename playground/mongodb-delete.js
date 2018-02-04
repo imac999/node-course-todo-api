@@ -22,7 +22,7 @@ MongoClient.connect('mongodb://localhost:27017', (err, database) => {
   // });
 
   db.collection('Todos').findOneAndDelete({text: 'Walk the dog'}).then((result) => {
-      console.log(JSON.stringify(result));
+    console.log(JSON.stringify(result));
   }, (err) => {
     console.log('Unable to delete', err);
   });
