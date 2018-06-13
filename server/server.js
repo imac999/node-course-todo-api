@@ -1,3 +1,5 @@
+const {ObjectId} = require('mongodb');
+
 var express=require('express');
 var bodyParser=require('body-parser');
 
@@ -28,6 +30,27 @@ app.get('/todos', (req, res) => {
   }, (e) => {
     res.status(400).send(e);
   });
+});
+
+app.get('/todo/:id', (req, res) => {
+
+if(req.params.id){
+  if(ObjectId.isValid(req.params.id)){
+    Todo.findById(req.params.id).then((todo)=>{
+      if(todo){
+        res.send({todo});
+      }else{
+        res.status(404).send('No Todo with that Id');
+      }
+    }, (e) => {
+      res.status(404).send();
+    });
+  }else{
+    res.status(404).send('Thats not a valid Id');
+  }
+}else{
+  res.status(404).send('There is no Id');
+}
 });
 
 app.listen(3000, () => {
