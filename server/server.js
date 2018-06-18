@@ -32,7 +32,7 @@ app.get('/todos', (req, res) => {
   });
 });
 
-app.get('/todo/:id', (req, res) => {
+app.get('/todos/:id', (req, res) => {
 
 if(req.params.id){
   if(ObjectId.isValid(req.params.id)){
@@ -48,8 +48,6 @@ if(req.params.id){
   }else{
     res.status(404).send('Thats not a valid Id');
   }
-}else{
-  res.status(404).send('There is no Id');
 }
 });
 
