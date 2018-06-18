@@ -1,7 +1,8 @@
+const _ = require('lodash');
 const {ObjectId} = require('mongodb');
 
-var express=require('express');
-var bodyParser=require('body-parser');
+const express=require('express');
+const bodyParser=require('body-parser');
 
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
@@ -69,6 +70,33 @@ if(req.params.id){
     res.status(404).send('Thats not a valid Id');
   }
 }
+});
+
+app.patch('/todos/:id', (req, res) => {
+  if(req.params.id){
+    if(ObjectId.isValid(req.params.id)){
+      var body = _.pick(req.body, ['text', 'completed']);
+      if (_.isBoolean(body.completed) && body.completed===true){
+        body.completedAt = new Date().getTime();
+      }else{
+        body.completed = false;
+        body.completedAt = null;
+      }
+      Todo.findByIdAndUpdate(req.params.id, {$set: body}, {new: true}).then((todo) => {
+        if(todo){
+          return res.send({todo});
+        }else{
+          return res.status(404).send('No Todo with that Id');
+        }
+      }).catch((e) => {
+          return res.setStatus(400).send({e})
+      });
+    }else{
+        return res.status(404).send('The id is invalid');
+    }
+  }else{
+    return res.status(404).send('There is no Id');
+  }
 });
 
 app.listen(port, () => {
