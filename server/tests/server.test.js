@@ -9,10 +9,11 @@ const testTodos=[{
   _id: new ObjectID(),
   text: 'first text todo',
   completed: true,
-  completedAt: 123
 },{
   _id: new ObjectID(),
-  text: 'second text todo'
+  text: 'second text todo',
+  completed: true,
+  completedAt: '123'
 }]
 
 beforeEach((done) => {
@@ -135,37 +136,58 @@ describe('POST /todos', () => {
   });
 
   describe('PATCH /todos/:id', () => {
-      it('should update the todo completedAt', (done) => {
+      it('should update fields and insert completedAt', (done) => {
+        var text='This is the updated text';
         request(app)
-          .patch(`/todos/${testTodos[0]._id}`)
-          .send(testTodos[0])
+          .patch(`/todos/${testTodos[0]._id.toHexString()}`)
+          .send({
+            completed: true,
+            text
+          })
           .expect(200)
           .expect((res) => {
-            expect(res.body.todo.text).toBe(testTodos[0].text);
+            expect(res.body.todo.text).toBe(text);
             expect(res.body.todo.completed).toBe(true);
-            //expect(res.body.todo.completedAt).toBeA("number");
+            expect(typeof res.body.todo.completedAt).toBe('number');
           })
           .end((err, res) => {
             if(err){
               return done(err);
             }else{
               Todo.findById(testTodos[0]._id.toHexString()).then((todo) => {
-                expect(todo.text).toBe(testTodos[0].text);
+                expect(todo.text).toBe(text);
                 expect(todo.completed).toBe(true);
-                //expect(res.body.todo.completedAt).toBeA("number");
+                expect(typeof res.body.todo.completedAt).toBe('number');
                 return done();
               }).catch((e) => done(e));
             }
           });
       });
       it('should clear completedAt when to not complete', (done) => {
+        var text='more updated text';
         request(app)
-          .patch(`/todos/${testTodos[1]._id}`)
-          .send(testTodos[1])
+          .patch(`/todos/${testTodos[1]._id.toHexString()}`)
+          .send({
+            text,
+            completed: false
+          })
           .expect(200)
           .expect((res) => {
-            expect(res.body.completedAt).not.toBeDefined();
+            expect(res.body.todo.text).toBe(text);
+            expect(res.body.todo.completed).toBe(false);
+            expect(res.body.todo.completedAt).toBeNull();
           })
-          .end(done);
+          .end((err, res) => {
+            if(err){
+              return done(err);
+            }else{
+              Todo.findById(testTodos[1]._id.toHexString()).then((todo) => {
+                expect(todo.text).toBe(text);
+                expect(todo.completed).toBe(false);
+                expect(res.body.todo.completedAt).toBeNull();
+                return done();
+              }).catch((e) => done(e));
+            }
+          });
       });
     });
